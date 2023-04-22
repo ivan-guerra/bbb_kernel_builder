@@ -10,5 +10,5 @@ source config.sh
 if [ -d $BBB_KBUILD_BIN_DIR ]
 then
     echo -e "${LGREEN}Removing '$BBB_KBUILD_BIN_DIR'${NC}"
-    rm -r $BBB_KBUILD_BIN_DIR
+    sudo rm -r $BBB_KBUILD_BIN_DIR
 fi
