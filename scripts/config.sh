@@ -14,14 +14,5 @@ BBB_KBUILD_PROJECT_PATH=$(dirname $(pwd))
 # Binary directory.
 BBB_KBUILD_BIN_DIR="${BBB_KBUILD_PROJECT_PATH}/bin"
 
-# Kernel config docker context path.
+# Docker build path.
 BBB_KBUILD_DOCKER_PATH="${BBB_KBUILD_PROJECT_PATH}/docker"
-
-# Linux kernel build files.
-BBB_KBUILD_KERNEL_OBJ_PATH="${BBB_KBUILD_BIN_DIR}/obj"
-
-# Linux kernel source tree directory.
-BBB_KBUILD_KERNEL_SRC_PATH="${BBB_KBUILD_PROJECT_PATH}/linux"
-
-# ccache path. Allows for the use of a build cache between kernel builds.
-BBB_KBUILD_CCACHE_PATH="${BBB_KBUILD_BIN_DIR}/ccache"
