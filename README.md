@@ -1,26 +1,27 @@
 # BeagleBone Black Kernel Builder
 
-This project provides a Docker image and supporting scripts for configuring,
-building, and deploying a custom kernel to the [BeagleBone Black][1].
+This project provides a Docker image and supporting scripts for configuring and
+building a custom kernel for the [BeagleBone Black][1] dev board.
+`bbb_kernel_builder` provides a container able to run the build scripts included
+in the [`ti-linux-kernel-dev`][2] project. The container is a convenience in the
+sense that it saves you from having to install the array of tools needed to
+build the kernel with the added benefit of supporting Windows builds via
+Docker Desktop. The output of the container is a set of `*.deb` files that make
+up the kernel, headers, etc. Those `*.deb` files are ready to be transferred to
+the BBB and can be installed using the `dpkg` utility.
 
-### Required Software
-
-All scripts and containers within this project are meant to be run on a Linux
-system. Below is a list of the required software.
-
-- [ ] Git
-- [ ] Bash
-- [ ] Docker
+The following sections will walk you through the process of setting up an SD
+card with an official Debian BBB image. We'll then run the `bbb_kernel_builder`
+scripts to configure and build the kernel. Finally, we'll show you how to
+transfer and install the kernel to the BBB.
 
 ### Prepping the SD Card
 
-The scripts and container assume you have a SD card flashed with one of the
-latest Debian images provided by [beagleboard.org][2]. I recommend the console
-images due to their compactness though the IoT image will work just as well. The
-commands below demonstrate how one would setup an SD card with a Debian Console
-image.
+To get started, flash a micro SD card with the latest BBB Debian image. I
+recommend the console images due to their compactness though the IoT image will
+work just as well.
 
-Download the latest image from [beagleboard.org][2]:
+Download the latest image from [beagleboard.org][3]:
 ```bash
 wget https://debian.beagleboard.org/images/bone-debian-10.3-console-armhf-2020-04-06-1gb.img.xz
 ```
@@ -36,44 +37,50 @@ your SD card!**
 ```bash
 sudo dd if=*.img of=/dev/sdb
 ```
+Writing the image to the SD will take a few minutes.
 
-Writing the image to the SD will take a few minutes. Once writing completes,
-mount the SD partition and take note of the kernel version:
+### Building and Configuring the Kernel
+
+To kick off the build, change directory to the [`scripts`](scripts) directory
+and run the [`build.sh`](scripts/build.sh) script:
+```bash
+./build.sh
+```
+
+The script will prompt you for a kernel version. If you navigate to the
+[`ti-linux-kernel-dev`][4] repository, you can browse the tags to find a version
+number that suites your needs. Note, the tags with `*-rt-*` are kernels with the
+`PREEMPT_RT` patches applied.
+
+After selecting a version, the script will checkout the kernel sources, apply
+patches, etc. During the process, you will be prompted to configure the kernel
+via `menuconfig`. Make your selections and then proceed with the build.
+Depending on your machine, building the kernel and modules can take a while.
+
+Output `*.deb` files will be installed to `bbb_kernel_builder/bin`.
+
+### Deploying the Kernel to the BBB
+
+To kick off kernel deployment, mount the SD card with the BBB rootfs:
 ```bash
 sudo mount /dev/sdb1 /mnt/sd
-ls /mnt/sd/boot/vmlinuz*
 ```
-The version number following `vmlinuz-` is the number you should note. In this
-example, the kernel version is `4.19.94-ti-r42`.
 
-### Checking Out the Kernel
-
-To ease deployment, we will be building the kernel version identified in
-[Prepping the SD Card](#prepping-the-sd-card). You will want to set the `linux`
-submodule to point to the appropriate kernel version. For example, if the kernel
-version is `4.19.94-ti-r42`, then you would run the following commands to get
-the right branch:
-
+Copy the `bbb_kernel_builder/bin/*.dev` files to the BBB:
 ```bash
-cd linux
-git checkout 4.19.94-ti-r42
+sudo cp bbb_kernel_builder/bin/*.dev /mnt/sd/root
 ```
 
-At this point, you can make edits, apply patches, etc. to the Linux kernel
-sources.
-
-### Building and Deploying the Kernel to the SD Card
-
-Mount the SD card to your host filesystem if you have not already. To configure,
-build, and deploy the kernel run the [`build.sh`](scripts/build.sh) script and
-follow the prompts:
-
+`umount` the SD card and boot the BBB from the SD. Log on to the BBB as `root`
+and install your new kernel:
 ```bash
-cd scripts && ./build.sh
+dpkg -i /root/*.deb
 ```
 
-After the script completes, unmount the SD card and insert it into the BBB SD
-slot. You are now ready to boot off the SD and enjoy your custom kernel!
+Reboot the BBB off the SD card. Run `uname -a` and verify the kernel version you
+previously selected is the one displayed.
 
 [1]: https://beagleboard.org/black
-[2]: https://beagleboard.org/latest-images
+[2]: https://github.com/RobertCNelson/ti-linux-kernel-dev
+[3]: https://beagleboard.org/latest-images
+[4]: https://github.com/RobertCNelson/ti-linux-kernel-dev/tags
