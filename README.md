@@ -66,9 +66,9 @@ To kick off kernel deployment, mount the SD card with the BBB rootfs:
 sudo mount /dev/sdb1 /mnt/sd
 ```
 
-Copy the `bbb_kernel_builder/bin/*.dev` files to the BBB:
+Copy the `bbb_kernel_builder/bin/*.deb` files to the BBB:
 ```bash
-sudo cp bbb_kernel_builder/bin/*.dev /mnt/sd/root
+sudo cp bbb_kernel_builder/bin/*.deb /mnt/sd/root
 ```
 
 `umount` the SD card and boot the BBB from the SD. Log on to the BBB as `root`
